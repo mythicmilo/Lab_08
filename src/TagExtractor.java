@@ -30,14 +30,14 @@ public class TagExtractor extends JFrame
         mainPnl.setLayout(new BorderLayout());
         add(mainPnl);
 
-        setTitle("Tag Extractor");
-        setVisible(true);
-        setSize(700, 750);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         createDisplayPanel();
         createControlPanel();
+
+        setTitle("Tag Extractor");
+        setSize(650, 750);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setVisible(true);
     }
 
     public void createDisplayPanel()
@@ -48,7 +48,9 @@ public class TagExtractor extends JFrame
         fileNameLbl = new JLabel("File Name:");
         fileNameTF = new JTextField();
         fileNameTF.setEditable(false);
-        displayTA = new JTextArea(25, 25);
+        displayTA = new JTextArea(15, 50);
+        displayTA.setMargin(new Insets(10, 10, 10, 10));
+        displayTA.setEditable(false);
         scroller = new JScrollPane(displayTA);
 
         fileNamePnl.add(fileNameLbl);
@@ -64,6 +66,7 @@ public class TagExtractor extends JFrame
         ctrlPnl = new JPanel();
         extractBtn = new JButton("Extract Tags from File");
         extractBtn.addActionListener((ActionEvent e) -> {
+            resetExtractor();
             extractFrom();
             noiseFrom();
             excludeNoise();
@@ -81,6 +84,13 @@ public class TagExtractor extends JFrame
         ctrlPnl.add(extractBtn);
         ctrlPnl.add(quitBtn);
         mainPnl.add(ctrlPnl, BorderLayout.SOUTH);
+    }
+
+    public void resetExtractor()
+    {
+        displayTA.setText("");
+        allWords.clear();
+        noiseWords.clear();
     }
 
     public void extractFrom()
@@ -101,8 +111,11 @@ public class TagExtractor extends JFrame
             {
                 selectedFile = chooser.getSelectedFile();
                 Path file = selectedFile.toPath();
-                String fileName = selectedFile.toString();
+                Path selectedFileName = file.getFileName();
+                String fileName = selectedFileName.toString();
                 fileNameTF.setText(fileName);
+                fileNamePnl.revalidate();
+                fileNamePnl.repaint();
 
                 InputStream in =
                         new BufferedInputStream(Files.newInputStream(file, CREATE));
@@ -116,7 +129,9 @@ public class TagExtractor extends JFrame
                     while (tokenizer.hasMoreTokens())
                     {
                         word = tokenizer.nextToken();
-                        allWords.add(word);
+                        String noPunct = word.replaceAll("\\p{Punct}", "");
+                        String normWord = noPunct.toLowerCase();
+                        allWords.add(normWord);
                     }
                 }
                 reader.close();
