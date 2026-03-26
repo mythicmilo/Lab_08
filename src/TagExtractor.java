@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static java.nio.file.StandardOpenOption.CREATE;
@@ -23,6 +24,7 @@ public class TagExtractor extends JFrame
     JScrollPane scroller;
     ArrayList<String> allWords = new ArrayList<>();
     Set<String> noiseWords = new TreeSet<>();
+    Map<String, Integer> tagFreq = new TreeMap<>();
 
     public TagExtractor()
     {
@@ -91,6 +93,7 @@ public class TagExtractor extends JFrame
         displayTA.setText("");
         allWords.clear();
         noiseWords.clear();
+        tagFreq.clear();
     }
 
     public void extractFrom()
@@ -220,7 +223,6 @@ public class TagExtractor extends JFrame
 
     public void displayTagFreq()
     {
-        Map<String, Integer> tagFreq = new TreeMap<>();
         for (String word : allWords)
         {
             if (tagFreq.get(word) == null)
@@ -235,6 +237,37 @@ public class TagExtractor extends JFrame
         for (String word : tagFreq.keySet())
         {
             displayTA.append(word + ": " + tagFreq.get(word) + "\n");
+        }
+        confirmSaveOutput();
+    }
+
+    public void confirmSaveOutput()
+    {
+        int response = JOptionPane.showConfirmDialog(null, "Would you like to save the tag extractor output?", "Confirm Save Output", JOptionPane.YES_NO_OPTION);
+        if (response == JOptionPane.YES_OPTION)
+        {
+            File workingDirectory = new File(System.getProperty("user.dir"));
+            Path file = Paths.get(workingDirectory.getPath() + "\\src\\tagOutput.txt");
+            try
+            {
+                OutputStream out =
+                        new BufferedOutputStream(Files.newOutputStream(file, CREATE));
+                BufferedWriter writer =
+                        new BufferedWriter(new OutputStreamWriter(out));
+
+                for(String word : tagFreq.keySet())
+                {
+                    writer.write(word + ": " + tagFreq.get(word));
+                    writer.newLine();
+
+                }
+                writer.close();
+                System.out.println("Data file written!");
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 
